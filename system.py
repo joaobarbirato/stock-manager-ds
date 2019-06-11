@@ -1,5 +1,12 @@
 from exchange.broker import Broker
 
-bkr = Broker()
+class StockSystem:
+    def __init__(self):
+        self._bkr = Broker()
 
-bkr.start()
+    def start(self):
+        self._bkr.start()
+
+if __name__ == "__main__":
+    system = StockSystem()
+    system.start()

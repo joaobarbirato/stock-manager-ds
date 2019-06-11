@@ -1,11 +1,4 @@
 from exchange.stock import Stock
-from config import (ADDR, MONITOR_IN_PORT)
-
-"""
-    Servidor em 
-    https://learning-0mq-with-pyzmq.readthedocs.io/en/latest/pyzmq/pyzmqdevices/streamer.html
-"""
-
 
 
 class PartialMonitor:
@@ -33,9 +26,6 @@ class Monitor:
     """
     def __init__(self):
         self._dict = {}
-        self._context = zmq.Context()
-        self._socket = context.socket(zmq.PUSH)
-        self._socket.connect("tcp://%s:%s" % (MONITOR_IN_PORT, ADDR))
     
     def update_stock(self, stock):
         if isinstance(stock, Stock):
