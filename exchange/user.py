@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+
 import zmq
-from config import (ADDR, MONITOR_IN_PORT)
+from config import (ADDR, BROKER_IN_PORT)
 
 
 class Subscriber:
@@ -23,8 +25,10 @@ class Manager:
     """
     def __init__(self):
         self._context = zmq.Context()
-        self._socket = context.socket(zmq.PUSH)
-        self._socket.connect("tcp://%s:%s" % (MONITOR_IN_PORT, ADDR))
+        self._socket = self._context.socket(zmq.PUSH)
+        self._socket.connect("tcp://%s:%s" % (BROKER_IN_PORT, ADDR))
 
-    def create_stock(self, stock_id, stock_name, stock_value):
-        pass
+    def request_stock_update(self, stock_id, stock_value):
+        for i in range(0,10):
+            print("Estou tentando mandar #%d" % i)
+            self._socket.send(str('#%d' % i).encode())

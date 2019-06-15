@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 class Stock:
     def __init__(self, name, id_stock, val):
         """
