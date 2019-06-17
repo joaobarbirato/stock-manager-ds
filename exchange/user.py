@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import zmq
+import time
 from config import (ADDR, BROKER_IN_PORT)
 
 
@@ -19,16 +20,16 @@ class Subscriber:
     pass
 
 class Manager:
-    """
-        Servidor em 
-        https://learning-0mq-with-pyzmq.readthedocs.io/en/latest/pyzmq/pyzmqdevices/streamer.html
-    """
     def __init__(self):
         self._context = zmq.Context()
         self._socket = self._context.socket(zmq.PUSH)
-        self._socket.connect("tcp://%s:%s" % (BROKER_IN_PORT, ADDR))
+        self._socket.connect("tcp://%s:%s" % (ADDR, BROKER_IN_PORT))
+
 
     def request_stock_update(self, stock_id, stock_value):
-        for i in range(0,10):
-            print("Estou tentando mandar #%d" % i)
-            self._socket.send(str('#%d' % i).encode())
+        
+        # Start your result manager and workers before you start your producers
+        for num in range(20000):
+            work_message = { 'num' : num }
+            self._socket.send_json(work_message)
+            time.sleep(1)
