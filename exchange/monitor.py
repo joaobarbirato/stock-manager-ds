@@ -1,45 +1,51 @@
 # -*- coding: utf-8 -*-
 
-from exchange.stock import Stock
-
-
-class PartialMonitor:
-    """
-        No momento, é basicamente um dict em python, mas criei a classe caso precise adicionar mais coisa
-    """
-    def __init__(self):
-        self._partial_dict =  {}
-
-    def add_stock(self, obj):
-        if isinstance(obj, list):
-            for stock in obj:
-                self._partial_dict[stock.get_id()] = stock
-
-        if isinstance(obj, Stock):
-            self._partial_dict[obj.get_id()] = obj
-
-    def get_dict(self):
-        return self._partial_dict
+import zmq
+import json
+from exchange.stock import Stock, create_stock_json
+from config import (ADDR, MONITOR_PORT, unmarshal)
 
 
 class Monitor:
     """
-        Monitor q contem tds as stocks
+        No momento, é basicamente um dict em python, mas criei a classe caso precise adicionar mais coisa
     """
-    def __init__(self):
-        self._dict = {}
-    
-    def update_stock(self, stock):
-        if isinstance(stock, Stock):
-            if stock.get_id() in self._dict:
-                self._dict[stock.get_id()].update_value(stock.get_value())
-            else:
-                self._dict[stock.get_id()] = stock
+    def __init__(self, stock_id_list):
+        self._dict =  {}
+        self._context = zmq.Context()
+        self._socket = self._context.socket(zmq.SUB)
+        self._socket.connect("tcp://%s:%s" % (ADDR, MONITOR_PORT))
 
-    def response_partial_monitor(self, list_id):
-        """
-            :param list_id lista de ids de stocks 
-        """
-        pm = PartialMonitor()
-        pm.add_stock(list_id)
-        return pm.get_dict()
+        for id in stock_id_list:
+            self._socket.setsockopt_string(zmq.SUBSCRIBE, id)
+            self._dict[id] = {
+                "data": None,
+                "old": None,
+                "status": None
+            }
+
+    def _update_stock(self, obj):
+        if isinstance(obj, list):
+            for stock in obj:
+                self._update_stock(stock)
+
+        if isinstance(obj, Stock):
+            if self._dict[obj.get_id()]['data'] is None:
+                self._dict[obj.get_id()]['data'] = obj
+            else:
+                old_val = self._dict[obj.get_id()]['data'].get_value()
+                status = (obj.get_value() - old_val)*100 / old_val
+                self._dict[obj.get_id()]['data'] = obj
+                self._dict[obj.get_id()]['old'] = old_val
+                self._dict[obj.get_id()]['status'] = status
+
+    def listen(self):
+        print("Listening...")
+        while True:
+            [_id, d_stock] = self._socket.recv_multipart()
+            stock = create_stock_json(unmarshal(d_stock))
+            self._update_stock(stock)
+            print(_id, json.loads(stock))
+
+    def get_dict(self):
+        return self._dict

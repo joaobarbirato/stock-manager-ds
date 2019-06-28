@@ -1,4 +1,9 @@
 #-*- coding: utf-8 -*-
 from exchange.worker import Worker
-worker = Worker()
-worker.work()
+
+def main():
+    worker = Worker()
+    worker.work()
+
+if __name__ == "__main__":
+    main()

@@ -2,6 +2,9 @@
 
 from exchange.user import Manager
 
-manager = Manager()
+def main():
+    manager = Manager(None, None, None)
+    manager.send_stock()
 
-manager.request_stock_update(None, None)
+if __name__ == "__main__":
+    main()

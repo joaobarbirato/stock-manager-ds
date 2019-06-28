@@ -8,7 +8,11 @@ class StockSystem:
     def start(self):
         self._bkr.start()
 
-if __name__ == "__main__":
+def main():
     system = StockSystem()
     system.start()
-    print("Oi :) https://www.youtube.com/watch?v=NbFtiuH0Rco")
+
+if __name__ == "__main__":
+    main()
+    
+    
