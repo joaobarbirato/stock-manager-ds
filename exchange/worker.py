@@ -4,7 +4,8 @@ import time
 import zmq
 import random
 import sys
-from config import (ADDR, BROKER_OUT_PORT, MONITOR_PORT, marshal, unmarshal)
+from exchange.stock import (marshal, unmarshal)
+from config import (ADDR, BROKER_OUT_PORT, MONITOR_PORT)
 
 class Worker:
     def __init__(self):
@@ -19,7 +20,7 @@ class Worker:
         self._socket_out.bind("tcp://%s:%s" % (ADDR, MONITOR_PORT))
 
     def work(self):
-        print ("I am consumer #%s" % (self._consumer_id))
+        print ("I am worker #%s" % (self._worker_id))
         while True:
             # work = self._socket_in.recv()
             # data = work['num']
@@ -27,7 +28,9 @@ class Worker:
             # # self._socket_out.send_string("consumer %d %d" % (self._consumer_id, data))
             # self._socket_out.send_multipart([b'consumer', json.dumps(result).encode()])
             # print (result)
-            data = unmarshal(self._socket_in.recv())
+            
+            raw_data = self._socket_in.recv()
+            data = unmarshal(raw_data.decode())
             topic = data['id']
             print("[WKR] Worker %s received %r" % (self._worker_id, data))
             self._socket_out.send_multipart([topic.encode(), marshal(data)])

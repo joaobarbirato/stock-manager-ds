@@ -3,7 +3,7 @@
 from exchange.user import Manager
 
 def main():
-    manager = Manager(None, None, None)
+    manager = Manager("IBOVESPA", "IBV", 30.00)
     manager.send_stock()
 
 if __name__ == "__main__":

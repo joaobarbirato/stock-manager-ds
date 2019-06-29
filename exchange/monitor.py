@@ -2,8 +2,8 @@
 
 import zmq
 import json
-from exchange.stock import Stock, create_stock_json
-from config import (ADDR, MONITOR_PORT, unmarshal)
+from exchange.stock import (Stock, create_stock_json, unmarshal)
+from config import (ADDR, MONITOR_PORT)
 
 
 class Monitor:
@@ -44,8 +44,9 @@ class Monitor:
         while True:
             [_id, d_stock] = self._socket.recv_multipart()
             stock = create_stock_json(unmarshal(d_stock))
+            stock_id = _id.decode()
             self._update_stock(stock)
-            print(_id, json.loads(stock))
+            print("[SUB] ID: %s, VAL: %s" % (stock.get_id(), stock.get_value()))
 
     def get_dict(self):
         return self._dict

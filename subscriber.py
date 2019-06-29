@@ -1,7 +1,7 @@
 from exchange.monitor import Monitor
 
 def main():
-    m = Monitor(None)
+    m = Monitor(["IBV"])
     m.listen()
 
 if __name__ == "__main__":

@@ -1,13 +1,29 @@
 # -*- coding: utf-8 -*-
 
-from config import marshal as global_marshal
+from json import (dumps, loads)
 
 def create_stock_json(json):
     return Stock(
         name=json["name"],
         id_stock=json["id"],
-        val=json["val"]
+        val=json["value"]
     )
+
+def marshal(stock):
+    if isinstance(stock, Stock):
+        return marshal({
+            "id": stock.get_id(),
+            "name": stock.get_name(),
+            "value": stock.get_value()
+        })
+    elif isinstance(stock, dict):
+        return dumps(stock).encode()
+
+def unmarshal(d_json):
+    if isinstance(d_json, str):
+        return loads(d_json)
+    elif isinstance(d_json, bytes):
+        return unmarshal(d_json.decode())
 
 class Stock:
     def __init__(self, name, id_stock, val):
@@ -48,7 +64,7 @@ class Stock:
         return self._id
 
     def marshal(self):
-        return global_marshal(self)
+        return marshal(self)
 
     def __sub__(self, stk):
         if isinstance(stk, Stock):
