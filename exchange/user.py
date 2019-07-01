@@ -2,22 +2,42 @@
 
 import zmq
 import time
-from config import (ADDR, BROKER_IN_PORT)
+from config import (ADDR, BROKER_IN_PORT, SYSTEM_EXISTS_MONITOR)
 from exchange.monitor import Monitor
 from exchange.stock import Stock
+from exchange.worker import Worker
 
 
 class Subscriber:
     """
         ????
     """
-    def __init__(self, username, password, stock_id_list):
+    def __init__(self, username=None, password=None, stock_id_list=None):
         self._id_list = stock_id_list
-        self._monitor = Monitor(stock_id_list)
+
+        self._context = zmq.Context()
+        _socket_exists_monitor = self._context.socket(zmq.REQ)
+        _socket_exists_monitor.connect("tcp://%s:%s" % (ADDR, SYSTEM_EXISTS_MONITOR))
+        stock_id_list.sort()
+        _key = "_".join(stock_id_list)
+        _socket_exists_monitor.send_string(_key)
+        print(_key)
+        response_json = _socket_exists_monitor.recv_json()
+        print(response_json)
+        if not "error" in response_json:
+            print("ja existe")
+            response_stock_id_list = list(response_json.keys())[0].split("_")
+            self._monitor = Monitor(stock_id_list=response_stock_id_list, port_list=response_json[_key])
+        else:
+            print("criei")
+            self._monitor = Monitor(stock_id_list=stock_id_list)
 
         self._username = username
         self._password = password
         self._online = False
+
+    def listen(self):
+        self._monitor.listen()
 
     def login(self, username, password):
         if username == self._username and password == self._password and not self._online:
@@ -46,11 +66,8 @@ class Manager:
 
     def update_value(self, stock_value):
         self._my_stock.set_value(stock_value)
-        # Start your result manager and workers before you start your producers
-        # for num in range(20000):
-        #     work_message = {'num' : num}
-        #     self._socket.send_json(work_message)
-        #     time.sleep(1)
 
     def send_stock(self):
-        self._socket.send(self._my_stock.marshal())
+        self._socket.send_multipart(
+            [str(self._my_stock.get_id()).encode(), self._my_stock.marshal()]
+            )

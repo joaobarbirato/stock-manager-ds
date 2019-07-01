@@ -4,36 +4,56 @@ import time
 import zmq
 import random
 import sys
-from exchange.stock import (marshal, unmarshal)
-from config import (ADDR, BROKER_OUT_PORT, MONITOR_PORT)
+from threading import Thread
+from exchange.stock import (marshal, unmarshal, create_stock_json)
+from config import (ADDR, BROKER_OUT_PORT, MONITOR_PORT, SYSTEM_UPDATE_PORT)
 
 class Worker:
-    def __init__(self):
+    def __init__(self, stock_id=None):
         self._worker_id = random.randrange(1,10005)
 
-        self._context_in = zmq.Context()
-        self._socket_in = self._context_in.socket(zmq.PULL)
+        # BROKER -> WORKER
+        self._context = zmq.Context()
+        self._socket_in = self._context.socket(zmq.SUB)
         self._socket_in.connect("tcp://%s:%s" % (ADDR, BROKER_OUT_PORT))
+        self._socket_in.setsockopt_string(zmq.SUBSCRIBE, stock_id)
         
-        self._context_out = zmq.Context()
-        self._socket_out = self._context_out.socket(zmq.PUB)
-        self._socket_out.bind("tcp://%s:%s" % (ADDR, MONITOR_PORT))
+        _socket_world = self._context.socket(zmq.REQ)
+        _socket_world.connect("tcp://%s:%s" % (ADDR, SYSTEM_UPDATE_PORT))
+
+        _socket_world.send_string(stock_id)
+        self._my_port = _socket_world.recv_string()
+
+        self._socket_out = self._context.socket(zmq.PUB)
+        self._socket_out.bind("tcp://%s:%s" % (ADDR, self._my_port))
+
+        self._stock = None
+
+    def _listen(self):
+        while True:
+            [_, raw_data] = self._socket_in.recv_multipart()
+            data = unmarshal(raw_data.decode())
+
+            print("[WKR] Worker %s received %r" % (self._worker_id, data))
+            self._stock = create_stock_json(data)
+
+    def _update(self):
+        while True:
+            if self._stock is not None:
+                self._socket_out.send_multipart(
+                    [str(self._stock.get_id()).encode(), marshal(self._stock)]
+                )
+            time.sleep(1)
 
     def work(self):
-        print ("I am worker #%s" % (self._worker_id))
-        while True:
-            # work = self._socket_in.recv()
-            # data = work['num']
-            # result = { 'consumer' : self._consumer_id, 'num' : data}
-            # # self._socket_out.send_string("consumer %d %d" % (self._consumer_id, data))
-            # self._socket_out.send_multipart([b'consumer', json.dumps(result).encode()])
-            # print (result)
-            
-            raw_data = self._socket_in.recv()
-            data = unmarshal(raw_data.decode())
-            topic = data['id']
-            print("[WKR] Worker %s received %r" % (self._worker_id, data))
-            self._socket_out.send_multipart([topic.encode(), marshal(data)])
+        update_thr = Thread(target=self._update)
+        update_thr.start()
+        self._listen()
+        update_thr.join()
+
+        
+
+        
 
         
       

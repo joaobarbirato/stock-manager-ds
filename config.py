@@ -9,22 +9,15 @@ from exchange.stock import Stock
 
 NUM_WORKERS = 0
 ADDR = '127.0.0.1'
-BROKER_IN_PORT  =   '9010'
-BROKER_OUT_PORT =   '9030'
 
-MONITOR_PORT =   '9110'
-# MONITOR_OUT_PORT =  '9130'
+BROKER_PORT = '9000'
 
-# def marshal(stock):
-#     if isinstance(stock, Stock):
-#         return json.dumps({
-#             "id": stock.get_id(),
-#             "name": stock.get_name(),
-#             "value": stock.get_value(),
-#             "old_value": stock.get_old_value()
-#         }).encode()
+BROKER_IN_PORT  =   '9630'
+BROKER_OUT_PORT =   '9031'
 
-# def unmarshal(d_json):
-#     if isinstance(d_json, dict):
-#         return json.loads(d_json)
+MONITOR_PORT =   '9100'
 
+SYSTEM_EXISTS_MONITOR = '9896'
+SYSTEM_CREATE_MONITOR = '9897'
+SYSTEM_UPDATE_PORT = '9898'
+SYSTEM_LISTEN_PORT = '9899'
