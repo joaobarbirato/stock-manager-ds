@@ -17,5 +17,5 @@ python manager.py
 
 - On bash > 4 
 ```bash
-python subscriber.py
+python subscriber.py username [stock_id]+
 ```
