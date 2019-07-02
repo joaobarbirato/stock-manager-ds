@@ -4,7 +4,17 @@ from config import (ADDR, SYSTEM_LISTEN_PORT, SYSTEM_UPDATE_PORT, SYSTEM_CREATE_
 from threading import Thread
 import zmq, json
 
+"""
+To run this code use:
+
+python3 world.py
+
+"""
+
 class StockSystem:
+    """
+
+    """
     def __init__(self):
         self._bkr = Broker()
         self._stk_port = {}
@@ -26,16 +36,16 @@ class StockSystem:
         self._socket_exists_monitor = self._context.socket(zmq.REP)
         self._socket_exists_monitor.bind("tcp://%s:%s" % (ADDR, SYSTEM_EXISTS_MONITOR))
 
+    # Verify if it already exists a similar monitor and reuses it
     def _exists_monitor(self):
         while True:
             monitor_id = self._socket_exists_monitor.recv_string()
-            print(self._monitors)
-            print(monitor_id)
             if monitor_id in self._monitors:
                 self._socket_exists_monitor.send_json({monitor_id: self._monitors[monitor_id]})
             else:
                 self._socket_exists_monitor.send_json({"error": "Monitor does not exists"})
 
+    # Create a new monitor with the specified stock list and the correct worker port
     def _create_monitor(self):
         while True:
             monitor_id = self._socket_create_monitor.recv_string()
@@ -46,11 +56,8 @@ class StockSystem:
                     workers_port.append(self._stk_port[key])
                 self._monitors[monitor_id] = workers_port
                 self._socket_create_monitor.send_json({"success": "Monitor Created"})
-            else:
-                print("errei")
-            #     self._socket_create_monitor.send_json({monitor_id: self._monitors[monitor_id]})
 
-
+    # Gives a port to a new worker
     def _update(self):
         while True:
             stock_id = self._socket_update.recv_string()
@@ -62,6 +69,7 @@ class StockSystem:
 
             self._socket_update.send_string(str(new_port))
             
+    # Gives the correct port for each specified stock 
     def _listen(self):
         while True:
             raw_data = self._socket_listen.recv_multipart()
@@ -71,14 +79,13 @@ class StockSystem:
                     ports[stock_id.decode()] = self._stk_port[stock_id.decode()]
 
             print("[LST]", self._stk_port)
-            # raw_ports = [str(port).encode() for port in ports]
-            print(ports)
+
             if ports:
                 self._socket_listen.send_json(ports)
             else:
                 self._socket_listen.send_json({'error': 'stock not found'})
 
-
+    # Each world action is running in a thread
     def start(self):
         thr_update_port = Thread(target=self._update)
         thr_listen_port = Thread(target=self._listen)
