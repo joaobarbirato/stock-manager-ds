@@ -12,11 +12,12 @@ class Monitor:
     """
         No momento, é basicamente um dict em python, mas criei a classe caso precise adicionar mais coisa
     """
-    def __init__(self, stock_id_list, port_list=None):
+    def __init__(self, stock_id_list, port_list=None, username=None):
         self._id = -1
         self._dict =  {}
         self._context = zmq.Context()
         self._socket = self._context.socket(zmq.SUB)
+        self._username = username
         
         if port_list is None:
             _socket_register_monitor = self._context.socket(zmq.REQ)
@@ -38,7 +39,7 @@ class Monitor:
                 for _, port in self._ports.items():
                     self._socket.connect("tcp://%s:%s" % (ADDR, port))
 
-                for stock_id in stock_id_list:
+                for stock_id in ordered_ids:
                     self._socket.setsockopt_string(zmq.SUBSCRIBE, stock_id)
                     self._dict[stock_id] = {
                         "data": None,
@@ -91,11 +92,23 @@ class Monitor:
 
     def show_in_terminal(self):
         os.system('cls' if os.name == 'nt' else 'clear')
+        print("USERNAME: %s" % (self._username))
+        print("Monitoring: %s;" % (", ".join(list(self._dict.keys()))))
+        no_dash = 36
+        print("-"*no_dash)
         print("NAME\t\tVALUE\t\tVAR")
-        print("------------------------------------")
+        print("-"*no_dash)
         for key, value in self._dict.items():
             if value['data'] and value['status'] is not None:
-                print("%s\t\t%.2f\t\t%.2f" % (key, value['data'].get_value(), value['status']))
+                l1 = len("$ %.2f" %  value['data'].get_value())
+                if value['status'] < 0:
+                    l2 = len("%.2f%%" % value['status'])
+                    _white_space = no_dash - l1 - len(key) - 13 - l2
+                    print("%s\t\t$ %.2f%s%2.2f%%" % (key, value['data'].get_value(), " "*_white_space, value['status']))
+                else:
+                    l2 = len("+%.2f%%" % value['status'])
+                    _white_space = no_dash - l1 - len(key) - 13 - l2
+                    print("%s\t\t$ %.2f%s+%2.2f%%" % (key, value['data'].get_value(), " "*_white_space, value['status']))
         print()
 
     def get_dict(self):

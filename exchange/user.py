@@ -12,9 +12,9 @@ class Subscriber:
     """
         ????
     """
-    def __init__(self, username=None, password=None, stock_id_list=None):
+    def __init__(self, username=None, stock_id_list=None):
         self._id_list = stock_id_list
-
+        self._username = username
         self._context = zmq.Context()
         _socket_exists_monitor = self._context.socket(zmq.REQ)
         _socket_exists_monitor.connect("tcp://%s:%s" % (ADDR, SYSTEM_EXISTS_MONITOR))
@@ -27,25 +27,13 @@ class Subscriber:
         if not "error" in response_json:
             print("ja existe")
             response_stock_id_list = list(response_json.keys())[0].split("_")
-            self._monitor = Monitor(stock_id_list=response_stock_id_list, port_list=response_json[_key])
+            self._monitor = Monitor(stock_id_list=response_stock_id_list, port_list=response_json[_key], username=self._username)
         else:
             print("criei")
-            self._monitor = Monitor(stock_id_list=stock_id_list)
-
-        self._username = username
-        self._password = password
-        self._online = False
+            self._monitor = Monitor(stock_id_list=stock_id_list, username=self._username)
 
     def listen(self):
         self._monitor.listen()
-
-    def login(self, username, password):
-        if username == self._username and password == self._password and not self._online:
-            self._online = True
-
-    def logout(self):
-        if self._online:
-            self._online = False
 
 
 class Manager:

@@ -8,7 +8,7 @@ from exchange.stock import Stock
 """
 
 NUM_WORKERS = 0
-ADDR = '127.0.0.1'
+ADDR = '192.168.15.18'
 
 BROKER_PORT = '9000'
 
