@@ -4,20 +4,18 @@ import json
 from exchange.stock import Stock
 
 """
+    Constants used in this project
     MANAGER -> BROKER -> WORKERS -> MONITOR -> SUBSCRIBER
 """
 
-NUM_WORKERS = 0
-ADDR = '192.168.15.18'
+# IP Address for running the system.
+ADDR = '127.0.0.1'
 
-BROKER_PORT = '9000'
+BROKER_IN_PORT      =   '9630'  # Broker input (frontend) port
+BROKER_OUT_PORT     =   '9031'  # Broker output (backend) port
 
-BROKER_IN_PORT  =   '9630'
-BROKER_OUT_PORT =   '9031'
+SYSTEM_EXISTS_MONITOR = '9896'  # Port for checking if a given monitor exists
+SYSTEM_CREATE_MONITOR = '9897'  # Port for register a new model
 
-MONITOR_PORT =   '9100'
-
-SYSTEM_EXISTS_MONITOR = '9896'
-SYSTEM_CREATE_MONITOR = '9897'
-SYSTEM_UPDATE_PORT = '9898'
-SYSTEM_LISTEN_PORT = '9899'
+SYSTEM_UPDATE_PORT    = '9898'  # Port for updating stock-worker relation
+SYSTEM_LISTEN_PORT    = '9899'  # Port for requesting all stock-worker relation

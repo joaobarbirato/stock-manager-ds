@@ -78,8 +78,6 @@ class StockSystem:
             else:
                 self._socket_listen.send_json({'error': 'stock not found'})
 
-            # self._socket_listen.send_string(self._stk_port[stock_id])
-
 
     def start(self):
         thr_update_port = Thread(target=self._update)
