@@ -47,12 +47,6 @@ class Subscriber:
         if self._online:
             self._online = False
 
-    def buy(self):
-        pass
-
-    def sell(self):
-        pass
-
 
 class Manager:
     """
@@ -66,6 +60,9 @@ class Manager:
 
     def update_value(self, stock_value):
         self._my_stock.set_value(stock_value)
+
+    def get_curr_value(self):
+        return self._my_stock.get_value()
 
     def send_stock(self):
         self._socket.send_multipart(

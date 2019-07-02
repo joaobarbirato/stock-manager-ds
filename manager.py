@@ -2,16 +2,56 @@
 
 from exchange.user import Manager
 from sys import argv
+from random import randint
+from time import sleep
+from threading import Thread
+
+"""
+    Bovespa Index 
+            101.339,68	+0,37%
+    Dow Jones
+            26.717,43	+0,44%
+    Nasdaq Composite
+            8.091,1624	+1,06%
+    FTSE 100
+            7.497,5	+0,97%
+    DAX Index
+            12.521,38	+0,99%
+"""
+
+def modify_value(manager):
+    if isinstance(manager, Manager):
+        while True:
+            manager.send_stock()
+            sleep(randint(1,5))
+            manager.update_value(
+                manager.get_curr_value()*(1. + (-1)**randint(1,2)*randint(1,20)/100)
+            )
 
 def main(item):
-    manager = Manager("IBOVESPA", "IBV", 30.00)
-    if len(item) > 1:
-        if item[1] == "1":
-            manager = Manager("IBOVESPA", "IBV", 30.00)
-        elif item[1] == "2":
-            manager = Manager("PERALTA", "PRT", 0.01)
+    manager_ibv = Manager("Bovespa Index", "IBV", 101339.68)
+    manager_dwj = Manager("Dow Jones", "DWJ", 26717.43)
+    manager_ndc = Manager("Nasdaq Composite", "NDC", 8091.1624)
+    manager_fts = Manager("FTSE 100", "FTS", 7497.5)
+    manager_dxi = Manager("DAX Index", "DXI", 12521.38)
 
-    manager.send_stock()
+    thread_ibv = Thread(target=modify_value, args=(manager_ibv,))
+    thread_dwj = Thread(target=modify_value, args=(manager_dwj,))
+    thread_ndc = Thread(target=modify_value, args=(manager_ndc,))
+    thread_fts = Thread(target=modify_value, args=(manager_fts,))
+    thread_dxi = Thread(target=modify_value, args=(manager_dxi,))
+
+    thread_ibv.start()
+    thread_dwj.start()
+    thread_ndc.start()
+    thread_fts.start()
+    thread_dxi.start()
+
+    thread_ibv.join()
+    thread_dwj.join()
+    thread_ndc.join()
+    thread_fts.join()
+    thread_dxi.join()
 
 if __name__ == "__main__":
     main(argv)

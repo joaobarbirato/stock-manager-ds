@@ -6,6 +6,7 @@ from exchange.stock import (Stock, create_stock_json, unmarshal)
 from config import (ADDR, MONITOR_PORT, SYSTEM_LISTEN_PORT, SYSTEM_CREATE_MONITOR)
 import random
 import os
+import signal
 
 class Monitor:
     """
@@ -36,7 +37,6 @@ class Monitor:
                 
                 for _, port in self._ports.items():
                     self._socket.connect("tcp://%s:%s" % (ADDR, port))
-                # self._socket.connect("tcp://%s:%s" % (ADDR, MONITOR_PORT))
 
                 for stock_id in stock_id_list:
                     self._socket.setsockopt_string(zmq.SUBSCRIBE, stock_id)
@@ -76,7 +76,8 @@ class Monitor:
                 status = (obj.get_value() - old_val)*100 / old_val
                 self._dict[obj.get_id()]['data'] = obj
                 self._dict[obj.get_id()]['old'] = old_val
-                self._dict[obj.get_id()]['status'] = status
+                if status != 0:
+                    self._dict[obj.get_id()]['status'] = status
 
     def listen(self):
         if self._dict:
@@ -86,13 +87,16 @@ class Monitor:
                 stock = create_stock_json(unmarshal(d_stock))
                 stock_id = _id.decode()
                 self._update_stock(stock)
-                os.system('cls' if os.name == 'nt' else 'clear')
-                for key, value in self._dict.items():
-                    if value['data'] is not None:
-                        print("[SUB] ID: %s, VAL: %s" % (key, value['data'].get_value()))
-                print()
-                
-                # print("[SUB] ID: %s, VAL: %s" % (stock.get_id(), stock.get_value()))
+                self.show_in_terminal()
+
+    def show_in_terminal(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("NAME\t\tVALUE\t\tVAR")
+        print("------------------------------------")
+        for key, value in self._dict.items():
+            if value['data'] and value['status'] is not None:
+                print("%s\t\t%.2f\t\t%.2f" % (key, value['data'].get_value(), value['status']))
+        print()
 
     def get_dict(self):
         return self._dict
