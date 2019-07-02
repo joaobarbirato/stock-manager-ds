@@ -11,6 +11,9 @@ from exchange.stock import Stock
 # IP Address for running the system.
 ADDR = '127.0.0.1'
 
+WORKER_01 = 9100    # First reserved port for workers
+WORKER_20 = 9120    # Last reserved port for workers
+
 BROKER_IN_PORT      =   '9630'  # Broker input (frontend) port
 BROKER_OUT_PORT     =   '9031'  # Broker output (backend) port
 

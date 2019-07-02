@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from exchange.broker import Broker
-from config import (ADDR, SYSTEM_LISTEN_PORT, SYSTEM_UPDATE_PORT, SYSTEM_CREATE_MONITOR, SYSTEM_EXISTS_MONITOR)
+from config import (ADDR, SYSTEM_LISTEN_PORT, SYSTEM_UPDATE_PORT, SYSTEM_CREATE_MONITOR, SYSTEM_EXISTS_MONITOR, WORKER_01, WORKER_20)
 from threading import Thread
 import zmq, json
 
@@ -13,26 +13,35 @@ python3 world.py
 
 class StockSystem:
     """
-
+        Main system
+        Runs a Broker;
+        Manages stock-worker port relations;
+        Manages existing monitors
     """
     def __init__(self):
-        self._bkr = Broker()
-        self._stk_port = {}
-        self._monitors = {}
+        self._bkr = Broker()        # Broker object
+        self._stk_port = {}         # Stock-worker port relations
+        self._monitors = {}         # Created monitors and it's subscribed woker ports
 
         self._context = zmq.Context()
+        
+        # Request-reply for update stock-worker port relations
         self._socket_update = self._context.socket(zmq.REP)
         self._socket_update.bind("tcp://%s:%s" % (ADDR, SYSTEM_UPDATE_PORT))
-        
+
+        # Request-reply for getting all stock-worker port relations
         self._socket_listen = self._context.socket(zmq.REP)
         self._socket_listen.bind("tcp://%s:%s" % (ADDR, SYSTEM_LISTEN_PORT))
 
-        self._worker_ports = range(9100, 9120)
+
+        self._worker_ports = range(WORKER_01, WORKER_20)    # All possible worker ports
         self._worker_index = 0
 
+        # Request-reply for creating and registrating a monitor
         self._socket_create_monitor = self._context.socket(zmq.REP)
         self._socket_create_monitor.bind("tcp://%s:%s" % (ADDR, SYSTEM_CREATE_MONITOR))
 
+        # Request-reply for informing if a given monitor already exists
         self._socket_exists_monitor = self._context.socket(zmq.REP)
         self._socket_exists_monitor.bind("tcp://%s:%s" % (ADDR, SYSTEM_EXISTS_MONITOR))
 

@@ -1,6 +1,10 @@
 # Instrutions
 Distributed Systems Project 2
 
+## Authors
+- João Gabriel Melo Barbirato [joaobarbirato](https://github.com/joaobarbirato)
+- Renata Sarmet Smiderle Mendes [renatasarmet](https://github.com/renatasarmet)
+
 ## Before you begin,
 adjust the server addr in `config.py`.
 

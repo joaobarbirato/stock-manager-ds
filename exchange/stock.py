@@ -37,6 +37,9 @@ def unmarshal(d_json):
         return unmarshal(d_json.decode())
 
 class Stock:
+    """
+        Stock object
+    """
     def __init__(self, name, id_stock, val):
         """
             :param id_stock: Stock identifier

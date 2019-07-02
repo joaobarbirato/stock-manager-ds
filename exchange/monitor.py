@@ -3,14 +3,14 @@
 import zmq
 import json
 from exchange.stock import (Stock, create_stock_json, unmarshal)
-from config import (ADDR, MONITOR_PORT, SYSTEM_LISTEN_PORT, SYSTEM_CREATE_MONITOR)
+from config import (ADDR, SYSTEM_LISTEN_PORT, SYSTEM_CREATE_MONITOR)
 import random
 import os
 import signal
 
 class Monitor:
     """
-        No momento, é basicamente um dict em python, mas criei a classe caso precise adicionar mais coisa
+        Stock monitor
     """
     def __init__(self, stock_id_list, port_list=None, username='Guest'):
         """

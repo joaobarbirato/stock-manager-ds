@@ -11,6 +11,7 @@ from exchange.worker import Worker
 class Subscriber:
     """
         Client that monitors stocks
+        Every subscriber has one monitor and one only
     """
     def __init__(self, username=None, stock_id_list=None):
         """
